@@ -1,12 +1,19 @@
 #!/bin/bash
 #echo  "Total recognition times:" >> ~/test/result.log
-total_num=$(grep -c "silfp_algo_auth:" LOG@A32B3D00CB5711E39C1A0800200C9A66)
+EXIT=exit
+if [[ ! $1 ]] || [[ "$1" = "--help" ]]; then
+  echo "Please Enter File Name"
+  $EXIT
+fi
+
+LOG=$1
+total_num=$(grep -c "silfp_algo_auth:" ${LOG})
 echo "Total recognition times:"${total_num} >> ~/test/result.log
-num=$(grep -c "silfp_algo_auth:754" LOG@A32B3D00CB5711E39C1A0800200C9A66)
+num=$(grep -c "silfp_algo_auth:754" ${LOG})
 echo "Recognition success times:"${num} >> ~/test/result.log
 
-start=$(cat LOG@A32B3D00CB5711E39C1A0800200C9A66 | grep -n -C10 "silfp_algo_auth:754" | grep -n "fp_identifyImage_identify:223" | awk '{print $3}')
-end=$(cat LOG@A32B3D00CB5711E39C1A0800200C9A66 | grep -n -C10 "silfp_algo_auth:754" | grep -n "fp_identifyImage_identify:258" | awk '{print $3}')
+start=$(cat ${LOG} | grep -n -C10 "silfp_algo_auth:754" | grep -n "fp_identifyImage_identify:223" | awk '{print $3}')
+end=$(cat ${LOG} | grep -n -C10 "silfp_algo_auth:754" | grep -n "fp_identifyImage_identify:258" | awk '{print $3}')
 
 start_value=()
 index=1
@@ -37,16 +44,10 @@ echo "time consuming:" >> ~/test/result.log
 
 total=0
 for index in $(seq 1 ${num});do 
-	if [ ${start_value[index]:0:1} == ${end_value[index]:0:1} ];then
-		echo `expr ${end_value[index]:0-3} - ${start_value[index]:0-3}` >> ~/test/result.log
-		value=`expr ${end_value[index]:0-3} - ${start_value[index]:0-3}`
-		total=`expr ${total} + ${value}`
-	else
-		end_value[index]:0-4:1=1
-		echo `expr ${end_value[index]:0-4} - ${start_value[index]:0-3}` >> ~/test/result.log
-		value=`expr ${end_value[index]:0-4} - ${start_value[index]:0-3}`
-		total=`expr ${total} + ${vallue}`
-	fi
+	value=$(echo ${end_value[index]}*1000 - ${start_value[index]}*1000 | bc)
+	echo ${value:0:2} >> ~/test/result.log
+	#value=echo ${end_value[index]} - ${start_value[index]} | bc
+	total=`expr ${total} + ${value:0:2}`
 done
 
 echo "time average:" >> ~/test/result.log
